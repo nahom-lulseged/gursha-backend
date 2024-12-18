@@ -13,15 +13,17 @@ import DeliveryDashboard from './components/DeliveryDashboard'
 import HotelOrders from './components/HotelOrders'
 import EditFood from './components/EditFood'
 import HotelFoodsList from './components/HotelFoodsList'
-
+import Contact from './components/Contact'
+import Admin from './components/admin/Admin' 
 function App() {
   return (
     <Router>
       <div> 
         <Routes>
+          <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/" element={<Dashboard />} />
+          {/* <Route path="/" element={<Dashboard />} /> */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/hotels" element={<Hotels />} />
           <Route path="/foods" element={<Foods />} />
@@ -35,7 +37,8 @@ function App() {
           <Route path="/hotel-orders" element={<HotelOrders />} />
           <Route path="/hotel/:hotelId" element={<HotelFoodsList />} />
 
-
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/admin" element={<Admin />} /> 
         </Routes>
       </div>
     </Router>

@@ -9,19 +9,20 @@ function Register() {
   const navigate = useNavigate();
 
   const onFinish = async (values) => {
-    console.log('Form Values:', values); // Log the values to inspect
+    console.log('Form Values:', values);
     setLoading(true);
     try {
+      const dataToSend = { ...values, role: 'customer' };
       const response = await fetch(`${apiUrl}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(values) // Send the values as is
+        body: JSON.stringify(dataToSend)
       });
 
       const data = await response.json();
-      console.log('Response Data:', data); // Log the response data
+      console.log('Response Data:', data);
       if (!response.ok) {
         throw new Error(data.message || 'Registration failed');
       }
@@ -111,21 +112,6 @@ function Register() {
               size="large"
               className="rounded-md"
             />
-          </Form.Item>
-
-          <Form.Item
-            name="role"
-            rules={[{ required: true, message: 'Please select your role!' }]}
-          >
-            <Select
-              placeholder="Register As..."
-              size="large"
-              className="rounded-md"
-            >
-              <Select.Option value="restaurant">Restaurant</Select.Option>
-              <Select.Option value="customer">Customer</Select.Option>
-              <Select.Option value="delivery">Delivery</Select.Option>
-            </Select>
           </Form.Item>
 
           <Form.Item>

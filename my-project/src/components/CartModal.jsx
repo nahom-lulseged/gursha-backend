@@ -1,5 +1,6 @@
-import { Modal, Button, List, InputNumber } from 'antd';
+import { Modal, Button, List, InputNumber, message } from 'antd';
 import { ShoppingCartOutlined, DeleteOutlined } from '@ant-design/icons';
+import { apiUrl } from '../utils/apiUrl';
 
 function CartModal({ 
   isVisible, 
@@ -12,6 +13,46 @@ function CartModal({
   user,
   foods 
 }) {
+  const handleChapaPayment = async () => {
+    try {
+      const myHeaders = new Headers();
+      myHeaders.append("Authorization", "Bearer CHAPUBK_TEST-efl6wBfFzHLtltwzUcQjArdHdU83FX3P");
+      myHeaders.append("Content-Type", "application/json");
+
+      const paymentData = {
+        amount: calculateTotal().toString(),
+        currency: "ETB",
+        email: `${user?.username}@gmail.com`,
+        first_name: user?.username,
+        last_name: user?.username,
+        phone_number: user?.phone_number,
+        tx_ref: Math.random().toString(36).substring(2, 15),
+        return_url: "https://gursha-delivery.vercel.app",
+        callback_url: `${apiUrl}/api/verify-payment`,
+      };
+
+      const requestOptions = {
+        method: 'POST',
+        headers: myHeaders,
+        body: JSON.stringify(paymentData),
+        redirect: 'follow'
+      };
+
+      const response = await fetch("https://api.chapa.co/v1/transaction/initialize", requestOptions);
+      const data = await response.json();
+
+      if (data.status === 'success' && data.data.checkout_url) {
+        await onCheckout(cartItems, foods, user);
+        window.location.href = data.data.checkout_url;
+      } else {
+        message.error('Failed to initialize payment');
+      }
+    } catch (error) {
+      console.error('Payment initialization error:', error);
+      message.error('Failed to initialize payment');
+    }
+  };
+
   const renderEmptyCart = () => (
     <div className="flex flex-col items-center justify-center py-8 space-y-4">
       <ShoppingCartOutlined className="text-4xl text-gray-300" />
@@ -81,6 +122,15 @@ function CartModal({
       footer={[
         <Button key="close" onClick={onClose} className="hover:bg-gray-100">
           Close
+        </Button>,
+        <Button
+          key="chapa"
+          type="primary"
+          disabled={cartItems.length === 0}
+          className="bg-green-600 hover:bg-green-700 mr-2"
+          onClick={handleChapaPayment}
+        >
+          Pay with Chapa
         </Button>,
         <Button
           key="checkout"

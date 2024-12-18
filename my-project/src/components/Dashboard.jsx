@@ -14,11 +14,20 @@ import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 
 
-const { Content } = Layout;
+const { Content, Footer } = Layout;
 
 function Dashboard() {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user'));
+  const user = JSON.parse(localStorage.getItem('user')); 
+
+  const userPaymentInfo = {
+    first_name: user?.username,
+    last_name: user?.username,
+    email: `${user?.username}@gmail.com`,
+    phone_number: user?.phone_number,  
+    tx_ref: Math.random().toString(36).substring(2, 15),
+    return_url : "https://gursha-delivery.vercel.app",
+  }
   
   const [state, setState] = useState({
     foods: [],
@@ -30,6 +39,7 @@ function Dashboard() {
   });
 
   const [banners, setBanners] = useState([banner1, banner2, banner3]);
+  const [foodRatings, setFoodRatings] = useState({});
 
   useEffect(() => {
     if (!localStorage.getItem('token')) {
@@ -39,6 +49,7 @@ function Dashboard() {
 
   useEffect(() => {
     fetchFoods();
+    fetchUserRatings();
     updateCartCount();
   }, []);
 
@@ -51,6 +62,39 @@ function Dashboard() {
     } catch (err) {
       setState(prev => ({ ...prev, error: err.message, isLoading: false }));
     }
+  };
+
+  const fetchUserRatings = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/api/foodRatings/ratings/${user.id}`);
+      if (!response.ok) throw new Error('Failed to fetch ratings');
+      
+      const ratings = await response.json();
+      const ratingsMap = {};
+      ratings.forEach(rating => {
+        ratingsMap[rating.foodId] = rating.rating;
+      });
+      
+      setFoodRatings(ratingsMap);
+    } catch (err) {
+      console.error('Error fetching ratings:', err);
+    }
+  };
+
+  const handleRatingChange = (foodId, userRating, newAverageRating) => {
+    setFoodRatings(prev => ({
+      ...prev,
+      [foodId]: userRating
+    }));
+
+    setState(prev => ({
+      ...prev,
+      foods: prev.foods.map(food => 
+        food._id === foodId 
+          ? { ...food, rating: newAverageRating }
+          : food
+      )
+    }));
   };
 
   const handleLogout = () => {
@@ -178,6 +222,8 @@ function Dashboard() {
               key={food._id}
               food={food}
               onCartUpdate={updateCartCount}
+              userRating={foodRatings[food._id] || 0}
+              onRatingChange={handleRatingChange}
             />
           ))
         ) : (
@@ -241,6 +287,18 @@ function Dashboard() {
         user={user}
         foods={state.foods}
       />
+
+      <Footer className="text-center bg-gray-100">
+        ©{new Date().getFullYear()} Gursha Delivery App. All Rights Reserved.
+      </Footer>
+    <div className="text-center mt-2 mb-2">
+      <button
+        onClick={() => window.location.href = '/contact'}
+        className="bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors duration-200"
+      >
+        Contact Us
+      </button>
+    </div>
     </Layout>
   );
 }

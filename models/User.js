@@ -4,11 +4,13 @@ const userSchema = new mongoose.Schema({
   username: {
     type: String,
     required: true,
-    trim: true
+    trim: true,
+    unique: true
   },
   password: {
     type: String,
-    required: true
+    required: true,
+    unique: true
   },
   wallet: {
     type: Number,
@@ -21,7 +23,7 @@ const userSchema = new mongoose.Schema({
     min: 0
   },
   phoneNumber: {
-    type: String,
+    type: Number,
     required: true,
     unique: true,
     trim: true

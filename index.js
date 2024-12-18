@@ -19,7 +19,11 @@ app.use('/api/hotels', require('./routes/hotels'));
 app.use('/api/foods', require('./routes/food'));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/user', require('./routes/user'));
-app.use('/api/delivery', require('./routes/delivery'));
+app.use('/api/delivery', require('./routes/delivery')); 
+app.use('/api/ratings', require('./routes/ratingRoutes'));
+app.use('/api/foodRatings', require('./routes/foodRoutes'));
+app.use('/api/messages', require('./routes/messagesRoutes'));
+app.use('/api/admin', require('./routes/adminRoutes'));
 // Add other routes here
 
 // Basic error handling

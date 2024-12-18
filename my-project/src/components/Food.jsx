@@ -1,81 +1,88 @@
-import { Card, Rate, Typography, Tag, Button, message } from 'antd';
-import { ShoppingCartOutlined } from '@ant-design/icons';
+import React from 'react';
+import { Card, Button, Rate, message } from 'antd';
+import { apiUrl } from '../utils/apiUrl';
 
-const { Title, Paragraph } = Typography;
+function Food({ food, onCartUpdate, userRating, onRatingChange }) {
+  const user = JSON.parse(localStorage.getItem('user'));
 
-const TYPE_COLORS = {
-  breakfast: 'orange',
-  lunch: 'green',
-  dinner: 'blue',
-  hotdrink: 'red',
-  alcohol: 'purple',
-  beverage: 'teal'
-};
+  const addToCart = () => {
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const existingItem = cart.find(item => item.name === food.name);
 
-function FoodImage({ picture, type }) {
-  return (
-    <div className="relative h-48">
-      <img alt="food" src={picture} className="h-full w-full object-cover" />
-      <Tag 
-        color={TYPE_COLORS[type] || 'default'} 
-        className="absolute top-2 right-2 m-0"
-      >
-        {type}
-      </Tag>
-    </div>
-  );
-}
-
-function Food({ food, onCartUpdate }) {
-  const { name, price, description, pictures, type, rating } = food;
-
-  const handleAddToCart = () => {
-    const existingCart = JSON.parse(localStorage.getItem('cart') || '[]');
-    const existingItemIndex = existingCart.findIndex(item => item.name === name);
-    
-    if (existingItemIndex !== -1) {
-      existingCart[existingItemIndex].quantity += 1;
-      message.success(`Added another ${name} to cart`);
+    if (existingItem) {
+      existingItem.quantity += 1;
     } else {
-      existingCart.push({ ...food, quantity: 1 });
-      message.success(`${name} added to cart`);
+      cart.push({
+        name: food.name,
+        price: food.price,
+        quantity: 1
+      });
     }
-    
-    localStorage.setItem('cart', JSON.stringify(existingCart));
+
+    localStorage.setItem('cart', JSON.stringify(cart));
     onCartUpdate();
+  };
+
+  const handleRating = async (value) => {
+    try {
+      const response = await fetch(`${apiUrl}/api/foodRatings/${food._id}/rate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          rating: value
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit rating');
+      }
+
+      const data = await response.json();
+      onRatingChange(food._id, value, data.rating);
+      message.success('Rating submitted successfully!');
+    } catch (error) {
+      message.error('Failed to submit rating');
+    }
   };
 
   return (
     <Card
       hoverable
-      className="w-full transition-transform duration-300 hover:scale-105"
-      cover={pictures?.[0] && <FoodImage picture={pictures[0]} type={type} />}
-      styles={{ body: { padding: '16px' } }}
+      cover={
+        <img
+          alt={food.name}
+          src={food.pictures[0]}
+          className="h-48 w-full object-cover"
+        />
+      }
+      className="shadow-lg"
     >
-      <div className="space-y-3">
-        <Title level={4} className="m-0 text-lg">{name}</Title>
-        <Paragraph 
-          className="text-gray-600 h-12 overflow-hidden text-sm"
-          ellipsis={{ rows: 2 }}
-        >
-          {description}
-        </Paragraph>
-
+      <div className="flex flex-col gap-2">
+        <h3 className="text-lg font-semibold">{food.name}</h3>
+        <p className="text-gray-600">{food.description}</p>
         <div className="flex justify-between items-center">
-          <span className="text-lg font-semibold text-blue-600">
-            ${price?.toFixed(2)}
-          </span>
-          <Rate disabled defaultValue={rating} className="text-sm" />
+          <span className="text-lg font-bold">${food.price}</span>
+          <Button type="primary" onClick={addToCart}>
+            Add to Cart
+          </Button>
         </div>
-
-        <Button
-          type="primary"
-          icon={<ShoppingCartOutlined />}
-          onClick={handleAddToCart}
-          className="w-full bg-blue-600 hover:bg-blue-700 flex items-center justify-center"
-        >
-          Add to Cart
-        </Button>
+        <div className="mt-2">
+          <p className="text-sm text-gray-500">Average Rating:</p>
+          <Rate disabled value={food.rating} allowHalf />
+          <span className="text-sm text-gray-500 ml-2">
+            ({food.rating ? food.rating.toFixed(1) : '0'})
+          </span>
+        </div>
+        <div>
+          <p className="text-sm text-gray-500">Your Rating:</p>
+          <Rate 
+            value={userRating}
+            onChange={handleRating}
+          />
+        </div>
       </div>
     </Card>
   );

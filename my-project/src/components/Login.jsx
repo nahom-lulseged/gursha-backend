@@ -48,6 +48,9 @@ const Login = () => {
         case 'customer':
           navigate('/dashboard');
           break;
+        case 'admin':
+          navigate('/admin');
+          break;
         default:
           navigate('/');
       }

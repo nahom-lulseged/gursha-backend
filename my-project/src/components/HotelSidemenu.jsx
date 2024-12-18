@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaBars, FaTimes, FaSignOutAlt } from 'react-icons/fa';
 import { MdDashboard, MdFastfood, MdHotel, MdReceipt, MdRestaurant } from 'react-icons/md';
 import { NavLink } from 'react-router-dom';
@@ -6,12 +6,31 @@ import { NavLink } from 'react-router-dom';
 const SideMenu = ({ onSignOut }) => {
   const [isOpen, setIsOpen] = useState(false);
 
+  useEffect(() => {
+    // Get user data from localStorage
+    const storedUser = localStorage.getItem('user'); 
+    if (storedUser) { 
+        const user = JSON.parse(storedUser);
+        if (user.role !== 'restaurant') {
+            window.location.href = "/login";
+        }
+    }
+}, []); 
+
+
+
   const menuLinkStyles = ({ isActive }) => 
     `flex items-center gap-3 p-2 rounded-md transition-colors ${
       isActive 
         ? 'bg-gray-700 text-white' 
         : 'hover:bg-gray-700 text-gray-300 hover:text-white'
     }`;
+
+  const handleSignOut = () => {
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+    if (onSignOut) onSignOut(); // Call the passed onSignOut prop if it exists
+  };
 
   return (
     <>
@@ -40,7 +59,7 @@ const SideMenu = ({ onSignOut }) => {
               <span>Hotel Orders</span>
             </NavLink>
             <button 
-              onClick={onSignOut}
+              onClick={handleSignOut}
               className="flex items-center gap-3 p-2 hover:bg-gray-700 rounded-md w-full text-left text-red-400 hover:text-red-300 transition-colors"
             >
               <FaSignOutAlt size={20} />

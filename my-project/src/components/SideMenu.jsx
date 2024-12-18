@@ -5,6 +5,10 @@ import { NavLink } from 'react-router-dom';
 
 const SideMenu = ({ onSignOut }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const user = JSON.parse(localStorage.getItem('user'));
+  if (user && user.role !== 'customer') {
+    window.location.href = '/login';
+  }
 
   const menuLinkStyles = ({ isActive }) => 
     `flex items-center gap-3 p-2 rounded-md transition-colors ${
@@ -12,6 +16,13 @@ const SideMenu = ({ onSignOut }) => {
         ? 'bg-gray-700 text-white' 
         : 'hover:bg-gray-700 text-gray-300 hover:text-white'
     }`;
+
+  const handleSignOut = () => {
+    // Call the passed onSignOut prop if it exists
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+    if (onSignOut) onSignOut(); 
+  };
 
   return (
     <>
@@ -40,7 +51,7 @@ const SideMenu = ({ onSignOut }) => {
               <span>My Orders</span>
             </NavLink>
             <button 
-              onClick={onSignOut}
+              onClick={handleSignOut}
               className="flex items-center gap-3 p-2 hover:bg-gray-700 rounded-md w-full text-left text-red-400 hover:text-red-300 transition-colors"
             >
               <FaSignOutAlt size={20} />

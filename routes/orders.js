@@ -29,6 +29,30 @@ router.get('/pending-orders', async (req, res) => {
   }
 });
 
+// Get all pending orders
+router.get('/read/all-orders', async (req, res) => {
+  try {
+    const pendingOrders = await Order.find()
+      .populate('foodId', 'name price pictures')
+      .populate('hotelId', 'name location')
+      .populate('userId', 'username phoneNumber')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      data: pendingOrders
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching pending orders',
+      error: error.message
+    });
+  }
+});
+
+
 // Get user's orders
 router.get('/user/:userId', async (req, res) => {
   try {
