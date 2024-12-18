@@ -35,7 +35,7 @@ router.post('/create', async (req, res) => {
         description: req.body.description,
         type: req.body.type,
         rating: req.body.rating,
-        hotelId: "674316ffecf0d26dc68dd6ee",
+        hotelId: req.body.hotelId,
         pictures: req.body.pictures
       });
   
